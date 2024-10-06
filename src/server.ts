@@ -1,9 +1,9 @@
 import express from 'express';
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
-const jsonBodyMiddleware = express.json()
-app.use(jsonBodyMiddleware)
+const jsonBodyMiddleware = express.json();
+app.use(jsonBodyMiddleware);
 
 const db = {
     courses: [
@@ -21,7 +21,7 @@ const HTTP_STATUSES = {
     NO_CONTENT_204: 204,
     BAD_REQUEST_400: 400,
     NOT_FOUND_404: 404
-}
+};
 
 app.get('/', (req, res) => {
     res.write('<button> <a href="/courses">redirect to courses</a> </button>');
@@ -30,7 +30,7 @@ app.get('/', (req, res) => {
 app.get('/courses', (req, res) => {
     if(req.query.title) {
         const foundCourses = db.courses
-            .filter(c => c.title.indexOf(req.query.title as string) > -1)
+            .filter(c => c.title.indexOf(req.query.title as string) > -1);
         res.json(foundCourses);
     }
     res.json(db.courses);
@@ -50,14 +50,14 @@ app.get('/courses/:id', (req, res) => {
 
 app.post('/courses', (req, res) => {
     if (!req.body.title) {
-        res.sendStatus(HTTP_STATUSES.BAD_REQUEST_400)
+        res.sendStatus(HTTP_STATUSES.BAD_REQUEST_400);
         return;
     }
     const newCourse = {
         id: +(new Date()),
         title: req.body.title
     };
-    db.courses.push(newCourse)
+    db.courses.push(newCourse);
     res
         .status(HTTP_STATUSES.CREATED_201)
         .json(db.courses);
