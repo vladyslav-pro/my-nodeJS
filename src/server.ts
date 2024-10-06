@@ -1,4 +1,4 @@
-import express from 'express';
+import express, {Request, Response}from 'express';
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -23,11 +23,11 @@ const HTTP_STATUSES = {
     NOT_FOUND_404: 404
 };
 
-app.get('/', (req, res) => {
+app.get('/', (req: Request, res: Response) => {
     res.write('<button> <a href="/courses">redirect to courses</a> </button>');
 })
 
-app.get('/courses', (req, res) => {
+app.get('/courses', (req: Request, res: Response) => {
     if(req.query.title) {
         const foundCourses = db.courses
             .filter(c => c.title.indexOf(req.query.title as string) > -1);
@@ -36,7 +36,7 @@ app.get('/courses', (req, res) => {
     res.json(db.courses);
 });
 
-app.get('/courses/:id', (req, res) => {
+app.get('/courses/:id', (req: Request, res: Response) => {
     const courses = db.courses
         .find(c => c.id === +req.params.id);
 
@@ -48,7 +48,7 @@ app.get('/courses/:id', (req, res) => {
     res.json(courses);
 });
 
-app.post('/courses', (req, res) => {
+app.post('/courses', (req: Request, res: Response) => {
     if (!req.body.title) {
         res.sendStatus(HTTP_STATUSES.BAD_REQUEST_400);
         return;
@@ -63,7 +63,7 @@ app.post('/courses', (req, res) => {
         .json(db.courses);
 });
 
-app.put('/courses/:id', (req, res) => {
+app.put('/courses/:id', (req: Request, res: Response) => {
     if (!req.body.title) {
         res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
         return;
@@ -82,7 +82,7 @@ app.put('/courses/:id', (req, res) => {
     res.json(db.courses);
 });
 
-app.delete('/courses/:id', (req, res) => {
+app.delete('/courses/:id', (req: Request, res: Response) => {
     db.courses = db.courses
         .filter(c => c.id === +req.params.id);
 
