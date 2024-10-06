@@ -1,5 +1,5 @@
-import express, {Request, Response}from 'express';
-const app = express();
+import express, { Request, Response } from 'express';
+export const app = express();
 const port = process.env.PORT || 3000;
 
 const jsonBodyMiddleware = express.json();
@@ -87,6 +87,11 @@ app.delete('/courses/:id', (req: Request, res: Response) => {
         .filter(c => c.id === +req.params.id);
 
 
+    res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
+})
+
+app.delete('/__test__/', (req: Request, res: Response) => {
+    db.courses = [];
     res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
 })
 
