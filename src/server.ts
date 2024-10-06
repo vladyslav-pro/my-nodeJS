@@ -88,14 +88,14 @@ app.delete('/courses/:id', (req: Request, res: Response) => {
 
 
     res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
-})
+});
 
+/* for testing*/
 app.delete('/__test__/', (req: Request, res: Response) => {
     db.courses = [];
     res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
-})
-
+});
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
-})
+});
