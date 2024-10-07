@@ -1,4 +1,4 @@
-import {Express, Request, Response} from "express";
+import express, {Express, Request, Response} from "express";
 import {RequestWithBody, RequestWithQuery, RequestWthParams, RequestWthParamsAndBody} from "../types";
 import {GetCourseQueryModel} from "../models/GetCourseQueryModel";
 import {CourseViewModel} from "../models/CourseViewModel";
@@ -7,7 +7,6 @@ import {CourseCreateModel} from "../models/CourseCreateModel";
 import {CourseTypeModel} from "../models/CourseTypeModel";
 import {CourseUpdateModel} from "../models/CourseUpdateModel";
 import {db} from "../db/db";
-
 
 export const HTTP_STATUSES = {
     OK_200: 200,
@@ -23,14 +22,12 @@ export const getCourseViewModel = (course: CourseTypeModel): CourseViewModel => 
         title: course.title,
     }
 }
-
-export const addCoursesRoutes = (app: Express ) => {
-    app.get('/', (req: Request, res: Response) => {
-        res.write('<button> <a href="/courses">redirect to courses</a> </button>');
-    })
+/*(app: Express )*/
+export const getCoursesRoutes = () => {
+    const routerCourses = express.Router();
 
     /* Request<{},{},{},{title: string}> => RequestWithQuery<{title: string}> */
-    app.get('/courses', (req: RequestWithQuery<GetCourseQueryModel>, res: Response<CourseViewModel[]>) => {
+    routerCourses.get('/', (req: RequestWithQuery<GetCourseQueryModel>, res: Response<CourseViewModel[]>) => {
         let foundCourses = db.courses;
 
         if(req.query.title) {
@@ -42,7 +39,7 @@ export const addCoursesRoutes = (app: Express ) => {
     });
 
     /* Request<{id: string}> => RequestWthParams<{id: string}> */
-    app.get('/courses/:id', (req: RequestWthParams<CourseURIModel>, res: Response<CourseViewModel>) => {
+    routerCourses.get('/:id', (req: RequestWthParams<CourseURIModel>, res: Response<CourseViewModel>) => {
         const course = db.courses
             .find(c => c.id === +req.params.id);
 
@@ -55,7 +52,7 @@ export const addCoursesRoutes = (app: Express ) => {
     });
 
     /* Request<{},{},{title: string}> => RequestWithBody<{title: string} */
-    app.post('/courses', (req: RequestWithBody<CourseCreateModel>, res: Response<CourseViewModel>) => {
+    routerCourses.post('/', (req: RequestWithBody<CourseCreateModel>, res: Response<CourseViewModel>) => {
         if (!req.body.title) {
             res.sendStatus(HTTP_STATUSES.BAD_REQUEST_400);
             return;
@@ -73,7 +70,7 @@ export const addCoursesRoutes = (app: Express ) => {
     });
 
     /* Request<{id: string}, {}, {title: string}> => RequestWthParamsAndBody<{id: string}, {title: string}> */
-    app.put('/courses/:id', (req: RequestWthParamsAndBody<CourseURIModel, CourseUpdateModel>, res: Response<CourseViewModel[]>) => {
+    routerCourses.put('/:id', (req: RequestWthParamsAndBody<CourseURIModel, CourseUpdateModel>, res: Response<CourseViewModel[]>) => {
         if (!req.body.title) {
             res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
             return;
@@ -92,10 +89,12 @@ export const addCoursesRoutes = (app: Express ) => {
         res.json(db.courses);
     });
 
-    app.delete('/courses/:id', (req: RequestWthParams<CourseURIModel>, res: Response) => {
+    routerCourses.delete('/:id', (req: RequestWthParams<CourseURIModel>, res: Response) => {
         db.courses = db.courses
             .filter(c => c.id === +req.params.id);
 
         res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
     });
+
+    return routerCourses;
 }

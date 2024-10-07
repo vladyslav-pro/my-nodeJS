@@ -1,5 +1,5 @@
 import express, {Request, Response} from "express";
-import {addCoursesRoutes, HTTP_STATUSES} from "./routes/courses";
+import {getCoursesRoutes, HTTP_STATUSES} from "./routes/courses";
 import {db} from "./db/db";
 
 export const app = express();
@@ -8,7 +8,8 @@ export const jsonBodyMiddleware = express.json();
 
 app.use(jsonBodyMiddleware);
 
-addCoursesRoutes(app);
+const coursesRouter = getCoursesRoutes();
+app.use("/courses", coursesRouter);
 
 /* for testing */
 app.delete('/__test__/', (req: Request, res: Response) => {
