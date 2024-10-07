@@ -1,5 +1,6 @@
 import request from 'supertest';
-import {app} from '../src/server';
+
+import {app} from "../src/app";
 
 describe('/courses', () => {
     beforeAll(async () => {
