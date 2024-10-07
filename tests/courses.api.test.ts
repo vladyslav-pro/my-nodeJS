@@ -1,5 +1,5 @@
 import request from 'supertest';
-import {app} from '../src/server'
+import {app} from '../src/server';
 
 describe('/courses', () => {
     beforeAll(async () => {
@@ -26,14 +26,14 @@ describe('/courses', () => {
 
         const createdCourses = createResponse.body;
 
-        expect(createdCourses).toEqual([{
+        expect(createdCourses).toEqual({
             id: expect.any(Number),
             title: 'some text',
-        }]);
+        });
 
         await request(app)
             .get('/courses')
-            .expect(200, createdCourses);
+            .expect(200, [createdCourses]);
     });
 
     it('shouldn`t create correct data', async () => {

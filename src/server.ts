@@ -1,17 +1,25 @@
 import express, { Request, Response } from 'express';
+import { RequestWithBody, RequestWithQuery, RequestWthParams, RequestWthParamsAndBody } from "./types";
+import { CourseCreateModel } from "./models/CourseCreateModel";
+import { CourseUpdateModel } from "./models/CourseUpdateModel";
+import { GetCourseQueryModel } from "./models/GetCourseQueryModel";
+import { CourseViewModel } from "./models/CourseViewModel";
+import { CourseURIModel } from "./models/CourseURIModel";
+import { CourseTypeModel } from "./models/CourseTypeModel";
+
 export const app = express();
 const port = process.env.PORT || 3000;
 
 const jsonBodyMiddleware = express.json();
 app.use(jsonBodyMiddleware);
 
-const db = {
+const db: { courses: CourseTypeModel[] } = {
     courses: [
-        {id: 1, title: 'Front-end'},
-        {id: 2, title: 'Back-end'},
-        {id: 3, title: 'DevOps'},
-        {id: 4, title: 'QA'},
-        {id: 5, title: 'Automation QA'}
+        {id: 1, title: 'Front-end', studentsCount: 5},
+        {id: 2, title: 'Back-end', studentsCount: 5},
+        {id: 3, title: 'DevOps', studentsCount: 5},
+        {id: 4, title: 'QA', studentsCount: 5},
+        {id: 5, title: 'Automation QA', studentsCount: 5}
     ]
 };
 
@@ -23,47 +31,62 @@ const HTTP_STATUSES = {
     NOT_FOUND_404: 404
 };
 
+const getCourseViewModel = (course: CourseTypeModel): CourseViewModel => {
+    return {
+        id: course.id,
+        title: course.title,
+    }
+}
+
 app.get('/', (req: Request, res: Response) => {
     res.write('<button> <a href="/courses">redirect to courses</a> </button>');
 })
 
-app.get('/courses', (req: Request, res: Response) => {
+/* Request<{},{},{},{title: string}> => RequestWithQuery<{title: string}> */
+app.get('/courses', (req: RequestWithQuery<GetCourseQueryModel>, res: Response<CourseViewModel[]>) => {
+    let foundCourses = db.courses;
+
     if(req.query.title) {
-        const foundCourses = db.courses
-            .filter(c => c.title.indexOf(req.query.title as string) > -1);
-        res.json(foundCourses);
+         foundCourses = foundCourses
+            .filter(c => c.title.indexOf(req.query.title) > -1);
     }
-    res.json(db.courses);
+
+    res.json(foundCourses.map(getCourseViewModel));
 });
 
-app.get('/courses/:id', (req: Request, res: Response) => {
-    const courses = db.courses
+/* Request<{id: string}> => RequestWthParams<{id: string}> */
+app.get('/courses/:id', (req: RequestWthParams<CourseURIModel>, res: Response<CourseViewModel>) => {
+    const course = db.courses
         .find(c => c.id === +req.params.id);
 
-    if (!courses){
+    if (!course){
         res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
         return;
     }
 
-    res.json(courses);
+    res.json(getCourseViewModel(course));
 });
 
-app.post('/courses', (req: Request, res: Response) => {
+/* Request<{},{},{title: string}> => RequestWithBody<{title: string} */
+app.post('/courses', (req: RequestWithBody<CourseCreateModel>, res: Response<CourseViewModel>) => {
     if (!req.body.title) {
         res.sendStatus(HTTP_STATUSES.BAD_REQUEST_400);
         return;
     }
-    const newCourse = {
+    const newCourse: CourseTypeModel = {
         id: +(new Date()),
-        title: req.body.title
+        title: req.body.title,
+        studentsCount: 0,
     };
+
     db.courses.push(newCourse);
     res
         .status(HTTP_STATUSES.CREATED_201)
-        .json(db.courses);
+        .json(getCourseViewModel(newCourse));
 });
 
-app.put('/courses/:id', (req: Request, res: Response) => {
+/* Request<{id: string}, {}, {title: string}> => RequestWthParamsAndBody<{id: string}, {title: string}> */
+app.put('/courses/:id', (req: RequestWthParamsAndBody<CourseURIModel, CourseUpdateModel>, res: Response<CourseViewModel[]>) => {
     if (!req.body.title) {
         res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
         return;
@@ -82,15 +105,14 @@ app.put('/courses/:id', (req: Request, res: Response) => {
     res.json(db.courses);
 });
 
-app.delete('/courses/:id', (req: Request, res: Response) => {
+app.delete('/courses/:id', (req: RequestWthParams<CourseURIModel>, res: Response) => {
     db.courses = db.courses
         .filter(c => c.id === +req.params.id);
-
 
     res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
 });
 
-/* for testing*/
+/* for testing */
 app.delete('/__test__/', (req: Request, res: Response) => {
     db.courses = [];
     res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
